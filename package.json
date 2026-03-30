@@ -1,17 +1,18 @@
 {
+  "name": "challenge-48h",
+  "private": true,
   "dependencies": {
     "leaflet": "^1.9.4",
     "react-leaflet": "^5.0.0"
   },
-  "name": "challenge-48h",
-  "private": true,
-  "scripts": {
-    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "backend": "cd backend && php artisan serve",
-    "frontend": "cd frontend && npm run dev",
-    "data": "python scripts/process_data.py"
-  },
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "scripts": {
+    "setup": "npm install && cd frontend && npm install && cd ../backend && composer install && php artisan key:generate",
+    "backend": "cd backend && php artisan serve",
+    "frontend": "cd frontend && npm run dev",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "data": "python scripts/process_data.py"
   }
 }
