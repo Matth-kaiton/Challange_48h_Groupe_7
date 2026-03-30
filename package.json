@@ -13,6 +13,7 @@
     "backend": "cd backend && php artisan serve",
     "frontend": "cd frontend && npm run dev",
     "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "data": "python scripts/process_data.py"
+    "data": "python scripts/process_data.py",
+    "start": "npm run data && npm run dev"
   }
 }

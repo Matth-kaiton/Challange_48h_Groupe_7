@@ -1,0 +1,4 @@
+npm run setup
+npm run data
+npm run dev
+npm run start
