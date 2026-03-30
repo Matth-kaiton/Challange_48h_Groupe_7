@@ -1,0 +1,18 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Arial, sans-serif; }
+.layout { padding: 12px; display: grid; gap: 10px; }
+h1 { margin: 0; font-size: 22px; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; }
+.filters input, .filters select, .filters button { padding: 6px; }
+#map { height: 74vh; width: 100%; border: 1px solid #ccc; }
+#status { margin: 0; font-size: 14px; color: #444; }
+.index-marker div {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 2px solid rgba(0,0,0,.35);
+  color: #111;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
