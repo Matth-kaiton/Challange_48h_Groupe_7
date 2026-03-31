@@ -5,13 +5,8 @@ services:
       - "8000:8000"
     depends_on:
       - db-master
-    environment:
-      DB_CONNECTION: pgsql
-      DB_HOST: db-master
-      DB_PORT: 5432
-      DB_DATABASE: app_db
-      DB_USERNAME: dev
-      DB_PASSWORD: devpass
+    env_file:
+      - .env
     networks:
       - public
       - private
@@ -25,10 +20,8 @@ services:
 
   db-master:
     image: postgres:15
-    environment:
-      POSTGRES_DB: app_db
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: devpass
+    env_file:
+      - .env
     volumes:
       - master_data:/var/lib/postgresql/data
     networks:
@@ -36,10 +29,8 @@ services:
 
   db-slave:
     image: postgres:15
-    environment:
-      POSTGRES_DB: app_db
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: devpass
+    env_file:
+      - .env
     volumes:
       - slave_data:/var/lib/postgresql/data
     networks:
