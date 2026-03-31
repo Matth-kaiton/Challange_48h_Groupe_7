@@ -527,6 +527,5 @@ docker compose exec backend php artisan migrate
 
 ---
 
-##  Auteur
 
 
