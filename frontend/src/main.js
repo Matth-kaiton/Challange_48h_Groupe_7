@@ -5,15 +5,22 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./style.css";
 
-const DATA_URL = "/storage/pollution_gps.json";
+const API_BASE = "http://127.0.0.1:8000";
 
 document.querySelector("#app").innerHTML = `
   <div class="layout">
     <h1>Carte Pollution</h1>
+
     <div class="filters">
       <input id="polluant" placeholder="Polluant (ex: NO2, PM10, O3)" />
+      <input id="dateStart" type="date" />
+      <input id="dateEnd" type="date" />
+      <input id="minValue" type="number" placeholder="Valeur min" />
+      <input id="maxValue" type="number" placeholder="Valeur max" />
       <button id="refresh">Refresh</button>
+      <button id="reset">Reset</button>
     </div>
+
     <div id="map"></div>
     <p id="status"></p>
   </div>
@@ -32,10 +39,11 @@ const layer = L.markerClusterGroup({
   spiderfyOnMaxZoom: true,
   showCoverageOnHover: false,
 });
+
 map.addLayer(layer);
 
 function parseNumber(value) {
-  if (value === null || value === undefined) return null;
+  if (value === null || value === undefined || value === "") return null;
   const n = parseFloat(String(value).replace(",", "."));
   return Number.isFinite(n) ? n : null;
 }
@@ -110,35 +118,38 @@ function groupByStation(items) {
   });
 }
 
-async function refresh() {
+async function refresh(fitBounds = true) {
   const status = document.querySelector("#status");
   const polluant = document.querySelector("#polluant").value.trim().toUpperCase();
+  const dateStart = document.querySelector("#dateStart").value;
+  const dateEnd = document.querySelector("#dateEnd").value;
+  const minValue = document.querySelector("#minValue").value;
+  const maxValue = document.querySelector("#maxValue").value;
 
   status.textContent = "Chargement...";
   layer.clearLayers();
 
   try {
-    const res = await fetch(DATA_URL);
+    const params = new URLSearchParams();
+
+    if (polluant) params.append("polluant", polluant);
+    if (dateStart) params.append("date_start", dateStart);
+    if (dateEnd) params.append("date_end", dateEnd);
+    if (minValue) params.append("min_value", minValue);
+    if (maxValue) params.append("max_value", maxValue);
+
+    const url = params.toString()
+      ? `${API_BASE}/api/pollution?${params.toString()}`
+      : `${API_BASE}/api/pollution`;
+
+    const res = await fetch(url);
 
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
     }
 
     const data = await res.json();
-
-    const filtered = data.filter((item) => {
-      if (polluant && String(item.polluant || "").toUpperCase() !== polluant) {
-        return false;
-      }
-
-      return (
-        parseNumber(item.lat) !== null &&
-        parseNumber(item.lon) !== null &&
-        parseNumber(item.valeur) !== null
-      );
-    });
-
-    const stations = groupByStation(filtered);
+    const stations = groupByStation(data);
 
     stations.forEach((station) => {
       const marker = L.marker([station.lat, station.lon], {
@@ -156,7 +167,7 @@ async function refresh() {
       layer.addLayer(marker);
     });
 
-    if (stations.length > 0) {
+    if (fitBounds && stations.length > 0) {
       const bounds = L.latLngBounds(
         stations.map((station) => [station.lat, station.lon])
       );
@@ -170,6 +181,17 @@ async function refresh() {
   }
 }
 
-document.querySelector("#refresh").addEventListener("click", refresh);
+document.querySelector("#refresh").addEventListener("click", () => {
+  refresh(true);
+});
 
-refresh();
+document.querySelector("#reset").addEventListener("click", () => {
+  document.querySelector("#polluant").value = "";
+  document.querySelector("#dateStart").value = "";
+  document.querySelector("#dateEnd").value = "";
+  document.querySelector("#minValue").value = "";
+  document.querySelector("#maxValue").value = "";
+  refresh(true);
+});
+
+refresh(true);

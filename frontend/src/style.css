@@ -1,51 +1,57 @@
-* { box-sizing: border-box; }
-
-body {
+html,
+body,
+#app {
   margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: Arial, sans-serif;
 }
 
 .layout {
-  padding: 12px;
-  display: grid;
-  gap: 10px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 h1 {
-  margin: 0;
-  font-size: 22px;
+  margin: 16px;
 }
 
 .filters {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 16px 16px 16px;
 }
 
 .filters input,
 .filters button {
-  padding: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
 }
 
 #map {
-  height: 74vh;
-  width: 100%;
-  border: 1px solid #ccc;
+  flex: 1;
+  min-height: 500px;
 }
 
 #status {
+  padding: 10px 16px;
   margin: 0;
-  font-size: 14px;
-  color: #444;
+  background: #f5f5f5;
+  border-top: 1px solid #ddd;
 }
 
 .index-marker div {
   width: 36px;
   height: 36px;
-  border-radius: 999px;
-  border: 2px solid rgba(0,0,0,.35);
+  border-radius: 50%;
+  border: 2px solid #555;
   color: #111;
-  font-weight: 700;
-  display: grid;
-  place-items: center;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  font-size: 13px;
 }
