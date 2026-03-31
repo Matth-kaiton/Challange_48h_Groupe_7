@@ -272,10 +272,6 @@ npm run data
 
 Challenge 48h - Groupe 7 d'Ynov
 
-## 📄 Licence
-
-MIT
-
 ---
 
 **⏰ Challenge terminé en 48h | 📅 Mars 2026**
