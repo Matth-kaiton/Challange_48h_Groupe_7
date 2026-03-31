@@ -26,6 +26,12 @@ services:
       - master_data:/var/lib/postgresql/data
     networks:
       - private
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
 
   db-slave:
     image: postgres:15
@@ -35,6 +41,12 @@ services:
       - slave_data:/var/lib/postgresql/data
     networks:
       - private
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5433:5432"
 
 volumes:
   master_data:
