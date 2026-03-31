@@ -1,0 +1,54 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db-master
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db-master
+      DB_PORT: 5432
+      DB_DATABASE: app_db
+      DB_USERNAME: dev
+      DB_PASSWORD: devpass
+    networks:
+      - public
+      - private
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - public
+
+  db-master:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpass
+    volumes:
+      - master_data:/var/lib/postgresql/data
+    networks:
+      - private
+
+  db-slave:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: app_db
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: devpass
+    volumes:
+      - slave_data:/var/lib/postgresql/data
+    networks:
+      - private
+
+volumes:
+  master_data:
+  slave_data:
+
+networks:
+  public:
+  private:
