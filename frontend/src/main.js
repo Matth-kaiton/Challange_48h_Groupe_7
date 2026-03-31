@@ -1,5 +1,8 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.markercluster";
+import "leaflet.markercluster/dist/MarkerCluster.css";
+import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "./style.css";
 
 const DATA_URL = "/storage/pollution_gps.json";
@@ -23,7 +26,13 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
-const layer = L.layerGroup().addTo(map);
+const layer = L.markerClusterGroup({
+  chunkedLoading: true,
+  maxClusterRadius: 50,
+  spiderfyOnMaxZoom: true,
+  showCoverageOnHover: false,
+});
+map.addLayer(layer);
 
 function parseNumber(value) {
   if (value === null || value === undefined) return null;
@@ -122,9 +131,11 @@ async function refresh() {
         return false;
       }
 
-      return parseNumber(item.lat) !== null &&
-             parseNumber(item.lon) !== null &&
-             parseNumber(item.valeur) !== null;
+      return (
+        parseNumber(item.lat) !== null &&
+        parseNumber(item.lon) !== null &&
+        parseNumber(item.valeur) !== null
+      );
     });
 
     const stations = groupByStation(filtered);
