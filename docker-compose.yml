@@ -1,0 +1,58 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db-master
+    env_file:
+      - .env
+    networks:
+      - public
+      - private
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    networks:
+      - public
+    command: npm run dev -- --host
+
+  db-master:
+    image: postgres:15
+    env_file:
+      - .env
+    volumes:
+      - master_data:/var/lib/postgresql/data
+    networks:
+      - private
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+
+  db-slave:
+    image: postgres:15
+    env_file:
+      - .env
+    volumes:
+      - slave_data:/var/lib/postgresql/data
+    networks:
+      - private
+    environment:
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5433:5432"
+
+volumes:
+  master_data:
+  slave_data:
+
+networks:
+  public:
+  private:

@@ -12,12 +12,7 @@
   "scripts": {
     "setup": "npm install && cd frontend && npm install && cd ../backend && composer install && php artisan key:generate",
 
-    "backend": "cd backend && php artisan serve",
-
-    "frontend": "cd frontend && npm run dev",
-
-    "data": "python scripts/process_data.py || py scripts/process_data.py || python3 scripts/process_data.py",
-
-    "dev": "npm run data && concurrently \"npm run backend\" \"npm run frontend\""
+    "data": "python scripts/process_data.py || py scripts/process_data.py || python3 scripts/process_data.py"
+    
   }
 }

@@ -182,8 +182,6 @@ document.querySelector("#maxValue").addEventListener("change", () => {
 async function refresh(fitBounds = true) {
   const status = document.querySelector("#status");
   const polluant = document.querySelector("#polluant").value.trim().toUpperCase();
-  const dateStart = document.querySelector("#dateStart").value;
-  const dateEnd = document.querySelector("#dateEnd").value;
   const minValue = document.querySelector("#minValue").value;
   const maxValue = document.querySelector("#maxValue").value;
 
@@ -195,8 +193,6 @@ async function refresh(fitBounds = true) {
     const params = new URLSearchParams();
 
     if (polluant) params.append("polluant", polluant);
-    if (dateStart) params.append("date_start", dateStart);
-    if (dateEnd) params.append("date_end", dateEnd);
     if (minValue) params.append("min_value", minValue);
     if (maxValue) params.append("max_value", maxValue);
 
