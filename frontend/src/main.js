@@ -24,8 +24,6 @@ document.querySelector("#app").innerHTML = `
         <option value="SO2">SO2</option>
         <option value="CO">CO</option>
       </select>
-      <input id="dateStart" type="date" />
-      <input id="dateEnd" type="date" />
       <input id="minValue" type="number" placeholder="Valeur min" />
       <input id="maxValue" type="number" placeholder="Valeur max" />
       <button id="refresh">Refresh</button>
