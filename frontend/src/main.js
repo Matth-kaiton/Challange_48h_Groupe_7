@@ -12,7 +12,18 @@ document.querySelector("#app").innerHTML = `
     <h1>Carte Pollution</h1>
 
     <div class="filters">
-      <input id="polluant" placeholder="Polluant (ex: NO2, PM10, O3)" />
+      <select id="polluant">
+        <option value="">Tous les polluants</option>
+        <option value="NO">NO</option>
+        <option value="NO2">NO2</option>
+        <option value="O3">O3</option>
+        <option value="NOX as NO2">NOX as NO2</option>
+        <option value="PM10">PM10</option>
+        <option value="PM2.5">PM2.5</option>
+        <option value="C6H6">C6H6</option>
+        <option value="SO2">SO2</option>
+        <option value="CO">CO</option>
+      </select>
       <input id="dateStart" type="date" />
       <input id="dateEnd" type="date" />
       <input id="minValue" type="number" placeholder="Valeur min" />
@@ -33,14 +44,16 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
 }).addTo(map);
 
-const layer = L.markerClusterGroup({
+const clusterLayer = L.markerClusterGroup({
   chunkedLoading: true,
   maxClusterRadius: 50,
   spiderfyOnMaxZoom: true,
   showCoverageOnHover: false,
 });
 
-map.addLayer(layer);
+const markerLayer = L.layerGroup();
+
+map.addLayer(clusterLayer);
 
 function parseNumber(value) {
   if (value === null || value === undefined || value === "") return null;
@@ -118,6 +131,41 @@ function groupByStation(items) {
   });
 }
 
+function clearMapLayers() {
+  clusterLayer.clearLayers();
+  markerLayer.clearLayers();
+
+  if (map.hasLayer(clusterLayer)) {
+    map.removeLayer(clusterLayer);
+  }
+
+  if (map.hasLayer(markerLayer)) {
+    map.removeLayer(markerLayer);
+  }
+}
+
+function buildMarker(station) {
+  const marker = L.marker([station.lat, station.lon], {
+    icon: circleIcon(station.avgValue),
+  });
+
+  marker.bindPopup(`
+  <b>${station.station}</b><br/>
+  Pollution: ${station.valeur ?? "-"}<br/>
+  Polluant: ${station.polluant ?? "-"}<br/>
+  Date: ${station.date ?? "-"}<br/>
+  Température: ${station.meteo?.temperature ?? "-"} °C<br/>
+  Humidité: ${station.meteo?.humidity ?? "-"} %<br/>
+  Vent: ${station.meteo?.wind_speed ?? "-"} km/h<br/>
+  Pluie: ${station.meteo?.precipitation ?? "-"} mm<br/>
+  Indice air-météo: ${station.air_meteo_index ?? "-"}<br/>
+  Risque: ${station.risk_level ?? "-"}<br/>
+  Distance jointure: ${station.spatial_match_distance_km ?? "-"} km
+`);
+
+  return marker;
+}
+
 async function refresh(fitBounds = true) {
   const status = document.querySelector("#status");
   const polluant = document.querySelector("#polluant").value.trim().toUpperCase();
@@ -127,7 +175,7 @@ async function refresh(fitBounds = true) {
   const maxValue = document.querySelector("#maxValue").value;
 
   status.textContent = "Chargement...";
-  layer.clearLayers();
+  clearMapLayers();
 
   try {
     const params = new URLSearchParams();
@@ -151,21 +199,21 @@ async function refresh(fitBounds = true) {
     const data = await res.json();
     const stations = groupByStation(data);
 
-    stations.forEach((station) => {
-      const marker = L.marker([station.lat, station.lon], {
-        icon: circleIcon(station.avgValue),
+    const hasValueFilter = minValue !== "" || maxValue !== "";
+
+    if (hasValueFilter) {
+      map.addLayer(markerLayer);
+
+      stations.forEach((station) => {
+        markerLayer.addLayer(buildMarker(station));
       });
+    } else {
+      map.addLayer(clusterLayer);
 
-      marker.bindPopup(`
-        <b>${station.station}</b><br/>
-        Moyenne: ${station.avgValue.toFixed(2)}<br/>
-        Nb mesures: ${station.count}<br/>
-        Polluants: ${station.polluants.join(", ") || "-"}<br/>
-        Dernière date: ${station.latestDate || "-"}
-      `);
-
-      layer.addLayer(marker);
-    });
+      stations.forEach((station) => {
+        clusterLayer.addLayer(buildMarker(station));
+      });
+    }
 
     if (fitBounds && stations.length > 0) {
       const bounds = L.latLngBounds(
@@ -174,7 +222,7 @@ async function refresh(fitBounds = true) {
       map.fitBounds(bounds, { padding: [20, 20] });
     }
 
-    status.textContent = `${stations.length} stations affichées`;
+    status.textContent = `${data.length} mesures filtrées - ${stations.length} stations affichées`;
   } catch (error) {
     console.error("Erreur chargement données :", error);
     status.textContent = "Erreur chargement données";

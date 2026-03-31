@@ -2,16 +2,21 @@ import pandas as pd
 import requests
 import io
 import os
-
+from datetime import datetime
 
 # Configuration
-date_du_jour = "2026-03-30" 
+date_du_jour = datetime.now().strftime("%Y-%m-%d")
 URL_MESURES = f"https://object.infra.data.gouv.fr/api/v1/buckets/ineris-prod/objects/download?prefix=lcsqa%2Fconcentrations-de-polluants-atmospheriques-reglementes%2Ftemps-reel%2F2026%2FFR_E2_{date_du_jour}.csv"
 URL_STATIONS_XLS = "https://static.data.gouv.fr/resources/donnees-temps-reel-de-mesure-des-concentrations-de-polluants-atmospheriques-reglementes-1/20251210-084445/fr-2025-d-lcsqa-ineris-20251209.xls"
 
+# # Configuration
+# date_du_jour = "2026-03-30" 
+# URL_MESURES = f"https://object.infra.data.gouv.fr/api/v1/buckets/ineris-prod/objects/download?prefix=lcsqa%2Fconcentrations-de-polluants-atmospheriques-reglementes%2Ftemps-reel%2F2026%2FFR_E2_{date_du_jour}.csv"
+# URL_STATIONS_XLS = "https://static.data.gouv.fr/resources/donnees-temps-reel-de-mesure-des-concentrations-de-polluants-atmospheriques-reglementes-1/20251210-084445/fr-2025-d-lcsqa-ineris-20251209.xls"
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-OUTPUT_DIR = "backend/storage/app/public"
+OUTPUT_DIR = "backend/storage/app"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
