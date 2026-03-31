@@ -2,11 +2,7 @@ import pandas as pd
 import os
 from math import radians, sin, cos, sqrt, atan2
 
-print("=== ETAPE 3 : MERGE GEOSPATIAL ===")
 
-# =========================
-# 1. LECTURE
-# =========================
 df_pollution = pd.read_csv("output/pollution_clean.csv")
 df_meteo = pd.read_csv("output/meteo_clean.csv")
 
@@ -17,9 +13,7 @@ print("\nTailles initiales :")
 print("Pollution :", df_pollution.shape)
 print("Meteo :", df_meteo.shape)
 
-# =========================
-# 2. LIRE LES STATIONS POLLUTION
-# =========================
+
 df_stations = pd.read_excel(stations_file, sheet_name="AirQualityStations")
 
 # garder seulement les colonnes utiles
@@ -40,9 +34,6 @@ df_stations = df_stations.drop_duplicates(subset=["code_site"])
 print("\nStations pollution :", df_stations.shape)
 print(df_stations.head())
 
-# =========================
-# 3. PREPARER LES STATIONS METEO UNIQUES
-# =========================
 df_meteo_stations = df_meteo[["station_meteo", "latitude", "longitude"]].dropna().drop_duplicates().copy()
 
 df_meteo_stations = df_meteo_stations.rename(columns={
@@ -53,9 +44,7 @@ df_meteo_stations = df_meteo_stations.rename(columns={
 print("\nStations meteo uniques :", df_meteo_stations.shape)
 print(df_meteo_stations.head())
 
-# =========================
-# 4. FONCTION DISTANCE HAVERSINE
-# =========================
+
 def haversine(lat1, lon1, lat2, lon2):
     R = 6371.0  # rayon Terre en km
 
@@ -69,9 +58,7 @@ def haversine(lat1, lon1, lat2, lon2):
 
     return R * c
 
-# =========================
-# 5. ASSOCIER CHAQUE STATION POLLUTION A LA STATION METEO LA PLUS PROCHE
-# =========================
+
 mapping_rows = []
 
 for _, poll_row in df_stations.iterrows():
@@ -108,9 +95,6 @@ print(df_mapping.head())
 os.makedirs("output", exist_ok=True)
 df_mapping.to_csv("output/station_mapping.csv", index=False)
 
-# =========================
-# 6. AJOUTER LE MAPPING AUX DONNEES POLLUTION
-# =========================
 df_pollution["datetime"] = pd.to_datetime(df_pollution["datetime"], errors="coerce")
 df_meteo["datetime"] = pd.to_datetime(df_meteo["datetime"], errors="coerce")
 
@@ -130,9 +114,7 @@ df_pollution = df_pollution.merge(df_mapping, on="code_site", how="left")
 print("\nPollution après ajout mapping :", df_pollution.shape)
 print(df_pollution.head())
 
-# =========================
-# 7. AGREGER METEO PAR STATION + HEURE
-# =========================
+
 df_meteo_grouped = (
     df_meteo.groupby(["station_meteo", "datetime_hour"])[["temperature", "humidity", "wind_speed", "pressure"]]
     .mean()
@@ -142,9 +124,7 @@ df_meteo_grouped = (
 print("\nMeteo groupée par station + heure :", df_meteo_grouped.shape)
 print(df_meteo_grouped.head())
 
-# =========================
-# 8. MERGE FINAL GEOSPATIAL
-# =========================
+
 df_merged = pd.merge(
     df_pollution,
     df_meteo_grouped,
@@ -152,15 +132,12 @@ df_merged = pd.merge(
     how="inner"
 )
 
-# petit nettoyage
 df_merged = df_merged.drop_duplicates()
 
 print("\nDataset fusionné géospatial :", df_merged.shape)
 print(df_merged.head())
 
-# =========================
-# 9. GARDER LES COLONNES UTILES POUR LA SUITE
-# =========================
+
 cols_to_keep = [
     "datetime",
     "code_site",
@@ -182,9 +159,7 @@ cols_to_keep = [
 cols_to_keep = [c for c in cols_to_keep if c in df_merged.columns]
 df_merged = df_merged[cols_to_keep].copy()
 
-# =========================
-# 10. SAUVEGARDE
-# =========================
+
 df_merged.to_csv("output/merged_dataset.csv", index=False)
 
 print("\nFichier généré : output/merged_dataset.csv")
