@@ -143,23 +143,37 @@ function clearMapLayers() {
 }
 
 function buildMarker(station) {
+  // On crée le marqueur avec l'icône de couleur basée sur la moyenne
   const marker = L.marker([station.lat, station.lon], {
     icon: circleIcon(station.avgValue),
   });
 
+  // Construction de la popup avec les données groupées
   marker.bindPopup(`
-  <b>${station.station}</b><br/>
-  Pollution: ${station.valeur ?? "-"}<br/>
-  Polluant: ${station.polluant ?? "-"}<br/>
-  Date: ${station.date ?? "-"}<br/>
-  Température: ${station.meteo?.temperature ?? "-"} °C<br/>
-  Humidité: ${station.meteo?.humidity ?? "-"} %<br/>
-  Vent: ${station.meteo?.wind_speed ?? "-"} km/h<br/>
-  Pluie: ${station.meteo?.precipitation ?? "-"} mm<br/>
-  Indice air-météo: ${station.air_meteo_index ?? "-"}<br/>
-  Risque: ${station.risk_level ?? "-"}<br/>
-  Distance jointure: ${station.spatial_match_distance_km ?? "-"} km
-`);
+    <div style="font-family: sans-serif; min-width: 200px;">
+      <h3 style="margin: 0 0 8px 0; color: #2c3e50;">${station.station}</h3>
+      <hr style="border: 0; border-top: 1px solid #eee;" />
+      
+      <p><strong>Moyenne Pollution:</strong> <span style="color: ${colorForValue(station.avgValue)}; font-weight: bold;">${station.avgValue.toFixed(2)}</span></p>
+      
+      <p><strong>Polluants détectés:</strong><br/> 
+         <small>${station.polluants.join(", ") || "Aucun"}</small>
+      </p>
+      
+      <p><strong>Mesures :</strong> ${station.count} relevé(s)</p>
+      
+      ${station.latestDate ? `<p><small><i>Dernière mise à jour: ${new Date(station.latestDate).toLocaleString()}</i></small></p>` : ""}
+      
+      <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; margin-top: 8px; font-size: 0.85em;">
+        <strong>Détails Météo :</strong><br/>
+        ${station.meteo ? `
+          🌡️ Temp: ${station.meteo.temperature ?? "-"} °C<br/>
+          💧 Humidité: ${station.meteo.humidity ?? "-"} %<br/>
+          🌬️ Vent: ${station.meteo.wind_speed ?? "-"} km/h
+        ` : "Données météo indisponibles"}
+      </div>
+    </div>
+  `);
 
   return marker;
 }
@@ -188,17 +202,12 @@ async function refresh(fitBounds = true) {
   status.textContent = "Chargement...";
   clearMapLayers();
 
-
   try {
     const params = new URLSearchParams();
-
     if (polluant) params.append("polluant", polluant);
-    if (minValue) params.append("min_value", minValue);
-    if (maxValue) params.append("max_value", maxValue);
 
-    const url = params.toString()
-      ? `${API_BASE}/api/pollution?${params.toString()}`
-      : `${API_BASE}/api/pollution`;
+    // URL propre sans le bug de syntaxe
+    const url = `${API_BASE}/api/pollution?${params.toString()}`;
 
     const res = await fetch(url);
 
@@ -207,19 +216,25 @@ async function refresh(fitBounds = true) {
     }
 
     const data = await res.json();
-    const stations = groupByStation(data);
+    let stations = groupByStation(data);
+
+    // Filtrage par valeur min/max (si ton API ne le fait pas déjà)
+    if (minValue !== "") {
+      stations = stations.filter(s => s.avgValue >= parseFloat(minValue));
+    }
+    if (maxValue !== "") {
+      stations = stations.filter(s => s.avgValue <= parseFloat(maxValue));
+    }
 
     const hasValueFilter = minValue !== "" || maxValue !== "";
 
     if (hasValueFilter) {
       map.addLayer(markerLayer);
-
       stations.forEach((station) => {
         markerLayer.addLayer(buildMarker(station));
       });
     } else {
       map.addLayer(clusterLayer);
-
       stations.forEach((station) => {
         clusterLayer.addLayer(buildMarker(station));
       });
@@ -232,7 +247,7 @@ async function refresh(fitBounds = true) {
       map.fitBounds(bounds, { padding: [20, 20] });
     }
 
-    status.textContent = `${data.length} mesures filtrées - ${stations.length} stations affichées`;
+    status.textContent = `${data.length} mesures reçues - ${stations.length} stations affichées`;
   } catch (error) {
     console.error("Erreur chargement données :", error);
     status.textContent = "Erreur chargement données";
