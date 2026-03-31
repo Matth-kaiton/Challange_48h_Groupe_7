@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
-df = pd.read_csv("output/merged_dataset.csv")
+df = pd.read_csv("output/final_dataset.csv")
 
 scaler = MinMaxScaler()
 
