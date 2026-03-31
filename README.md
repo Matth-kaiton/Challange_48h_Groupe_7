@@ -138,18 +138,6 @@ Pour mettre en valeur le fonctionnement des filtres sur la carte, ajoutez vos ca
 - `docs/screenshots/filtres-2.png` : filtre par type de polluant
 - `docs/screenshots/filtres-3.png` : agrégation des données par zone
 
-```markdown
-### 🔎 Exemple : Filtrage des données
-
-![Filtre valeurs min/max](docs/screenshots/filtres-1.png)
-*Filtre par valeurs min/max sur la carte.*
-
-![Filtre polluant](docs/screenshots/filtres-2.png)
-*Sélection d’un polluant spécifique (NO, NO2, O3...).*
-
-![Carte agrégée](docs/screenshots/filtres-3.png)
-*Affichage des clusters de stations après filtrage.*
-```
 
 > Astuce : Copiez les images fournies en pièce jointe dans `docs/screenshots` avec ces noms de fichiers pour que les liens fonctionnent.
 
@@ -369,6 +357,13 @@ npm run data
 ## 👥 Équipe
 
 Challenge 48h - Groupe 7 d'Ynov
+
+GROS Quentin 
+DUMAS Matthias
+ANDRIANASOLOHARISON Tsiory
+PERO Maxime
+NGOMA jade
+USYAL Kerem
 
 ## 📄 Licence
 
