@@ -3,16 +3,13 @@ import requests
 import io
 import os
 
-
 # Configuration
 date_du_jour = "2026-03-30" 
 URL_MESURES = f"https://object.infra.data.gouv.fr/api/v1/buckets/ineris-prod/objects/download?prefix=lcsqa%2Fconcentrations-de-polluants-atmospheriques-reglementes%2Ftemps-reel%2F2026%2FFR_E2_{date_du_jour}.csv"
 URL_STATIONS_XLS = "https://static.data.gouv.fr/resources/donnees-temps-reel-de-mesure-des-concentrations-de-polluants-atmospheriques-reglementes-1/20251210-084445/fr-2025-d-lcsqa-ineris-20251209.xls"
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-OUTPUT_DIR = "backend/storage/app/public"
-
+OUTPUT_DIR = "backend/storage/app"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def run_pipeline():
@@ -23,11 +20,8 @@ def run_pipeline():
         res_m = requests.get(URL_MESURES)
         df_m = pd.read_csv(io.StringIO(res_m.text), sep=';')
         
-        # Nettoyage des colonnes : on vire le BOM et on met en minuscules
         df_m.columns = df_m.columns.str.replace('ï»¿', '').str.replace('"', '').str.strip().str.lower().str.replace(' ', '_')
 
-        # --- ASTUCE POUR LA DATE ---
-        # On cherche la colonne qui contient "date" et "début" (ou "d" si l'accent saute)
         col_date_originale = [c for c in df_m.columns if 'date' in c and ('d' in c)][0]
         print(f"📅 Colonne date détectée : {col_date_originale}")
 
@@ -44,11 +38,9 @@ def run_pipeline():
             df_final = pd.merge(df_m, df_s, left_on='nom_site', right_on='name', how='inner')
 
         # 4. Préparation des colonnes finales
-        # On gère le cas où latitude/longitude s'appellent y/x
         if 'latitude' not in df_final.columns and 'y' in df_final.columns:
             df_final = df_final.rename(columns={'y': 'latitude', 'x': 'longitude'})
 
-        # On crée le DataFrame de sortie avec la date bien formatée
         df_export = pd.DataFrame()
         df_export['date'] = pd.to_datetime(df_final[col_date_originale], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S')
         df_export['station'] = df_final['nom_site']
@@ -56,6 +48,15 @@ def run_pipeline():
         df_export['valeur'] = df_final['valeur']
         df_export['lat'] = df_final['latitude']
         df_export['lon'] = df_final['longitude']
+
+        # --- 4.5 AJOUT : AFFICHAGE DES POLLUANTS UNIQUES ---
+        if not df_export.empty:
+            polluants_uniques = df_export['polluant'].unique()
+            print("-" * 30)
+            print(f"🧪 Polluants détectés ({len(polluants_uniques)}) :")
+            for p in polluants_uniques:
+                print(f"   • {p}")
+            print("-" * 30)
 
         # 5. Export JSON
         output_path = f"{OUTPUT_DIR}/pollution_gps.json"

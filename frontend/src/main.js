@@ -12,7 +12,18 @@ document.querySelector("#app").innerHTML = `
     <h1>Carte Pollution</h1>
 
     <div class="filters">
-      <input id="polluant" placeholder="Polluant (ex: NO2, PM10, O3)" />
+      <select id="polluant">
+        <option value="">Tous les polluants</option>
+        <option value="NO">NO</option>
+        <option value="NO2">NO2</option>
+        <option value="O3">O3</option>
+        <option value="NOX as NO2">NOX as NO2</option>
+        <option value="PM10">PM10</option>
+        <option value="PM2.5">PM2.5</option>
+        <option value="C6H6">C6H6</option>
+        <option value="SO2">SO2</option>
+        <option value="CO">CO</option>
+      </select>
       <input id="dateStart" type="date" />
       <input id="dateEnd" type="date" />
       <input id="minValue" type="number" placeholder="Valeur min" />
@@ -118,6 +129,22 @@ function groupByStation(items) {
   });
 }
 
+document.querySelector("#polluant").addEventListener("change", () => {
+  refresh(true);
+});
+
+document.querySelector("#minValue").addEventListener("change", () => {
+  refresh(true);
+});
+
+
+document.querySelector("#maxValue").addEventListener("change", () => {
+  refresh(true);
+});
+
+
+
+
 async function refresh(fitBounds = true) {
   const status = document.querySelector("#status");
   const polluant = document.querySelector("#polluant").value.trim().toUpperCase();
@@ -128,6 +155,7 @@ async function refresh(fitBounds = true) {
 
   status.textContent = "Chargement...";
   layer.clearLayers();
+
 
   try {
     const params = new URLSearchParams();
