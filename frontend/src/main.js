@@ -24,8 +24,6 @@ document.querySelector("#app").innerHTML = `
         <option value="SO2">SO2</option>
         <option value="CO">CO</option>
       </select>
-      <input id="dateStart" type="date" />
-      <input id="dateEnd" type="date" />
       <input id="minValue" type="number" placeholder="Valeur min" />
       <input id="maxValue" type="number" placeholder="Valeur max" />
       <button id="refresh">Refresh</button>
@@ -165,6 +163,21 @@ function buildMarker(station) {
 
   return marker;
 }
+document.querySelector("#polluant").addEventListener("change", () => {
+  refresh(true);
+});
+
+document.querySelector("#minValue").addEventListener("change", () => {
+  refresh(true);
+});
+
+
+document.querySelector("#maxValue").addEventListener("change", () => {
+  refresh(true);
+});
+
+
+
 
 async function refresh(fitBounds = true) {
   const status = document.querySelector("#status");
@@ -176,6 +189,7 @@ async function refresh(fitBounds = true) {
 
   status.textContent = "Chargement...";
   clearMapLayers();
+
 
   try {
     const params = new URLSearchParams();
